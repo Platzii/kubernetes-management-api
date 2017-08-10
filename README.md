@@ -2,7 +2,10 @@
 
 ## /proxy
 
-/proxy/list
-/proxy/info?name=
-/proxy/start?name=
-/proxy/stop?name=
+### /proxy/list
+
+### /proxy/info
+
+### /proxy/start
+
+### /proxy/stop
