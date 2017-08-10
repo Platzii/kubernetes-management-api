@@ -31,6 +31,19 @@ func (p *Proxy) Start() error {
 
 	logrus.Debugf("Proxy process for context '%s' running with PID '%d'", p.Name, p.PID)
 
+	go func() {
+		if err := p.cmd.Wait(); err != nil {
+			switch err.(type) {
+			case *exec.ExitError:
+				logrus.Warnf("Proxy process for '%s' with PID '%d' exited: %s", p.Name, p.PID, err.Error())
+			default:
+				logrus.Errorf("Proxy process for '%s' with PID '%d' exited unexpectedly: %s", p.Name, p.PID, err.Error())
+			}
+		}
+		p.Active = false
+		p.PID = -1
+	}()
+
 	return nil
 }
 
@@ -42,8 +55,6 @@ func (p *Proxy) Stop() error {
 	if err := p.cmd.Process.Kill(); err != nil {
 		return fmt.Errorf("kill process: %s", err.Error())
 	}
-	p.Active = false
-	p.PID = -1
 	return nil
 }
 
