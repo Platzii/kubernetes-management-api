@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os/exec"
 	"strconv"
+
+	"github.com/Sirupsen/logrus"
 )
 
 // Proxy represents a proxy connection
@@ -17,19 +19,28 @@ type Proxy struct {
 
 // Start Starts a proxy connection
 func (p *Proxy) Start() error {
+	logrus.Debugf("Start proxy for context '%s'", p.Name)
+
 	p.cmd = exec.Command(config.kubeCtlLocation, "--context", p.Name, "proxy", "-p", p.Port)
 	if err := p.cmd.Start(); err != nil {
 		return fmt.Errorf("start: %s", err.Error())
 	}
+
 	p.Active = true
 	p.PID = p.cmd.Process.Pid
+
+	logrus.Debugf("Proxy process for context '%s' running with PID '%d'", p.Name, p.PID)
+
 	return nil
 }
 
 // Stop Stops a proxy connection
 func (p *Proxy) Stop() error {
+	logrus.Debugf("Stop proxy for context '%s'", p.Name)
+
+	// if err := p.cmd.Process.Signal(os.Interrupt); err != nil { // SIGINT not working on Windows
 	if err := p.cmd.Process.Kill(); err != nil {
-		return fmt.Errorf("stop: %s", err.Error())
+		return fmt.Errorf("kill process: %s", err.Error())
 	}
 	p.Active = false
 	p.PID = -1

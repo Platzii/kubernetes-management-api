@@ -31,6 +31,8 @@ func (r *HTTPResponse) send(w http.ResponseWriter) error {
 }
 
 func returnError(w http.ResponseWriter, code int, error, message string) {
+	logrus.Errorf(message)
+
 	r := &HTTPResponse{
 		Code:    code,
 		Error:   error,
