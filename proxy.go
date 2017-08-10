@@ -83,27 +83,3 @@ func (pl *ProxyList) GetProxyByName(name string) (*Proxy, error) {
 	}
 	return nil, fmt.Errorf("Could not find proxy with name %s", name)
 }
-
-// func (pl *ProxyList) startAllProxies() error {
-// 	for _, p := range pl.Proxies {
-// 		go func(p *Proxy) {
-// 			if err := p.Start(); err != nil {
-// 				// return fmt.Errorf("start proxy %s: %s", p.Name, err.Error())
-// 				logrus.Errorf("Could not start proxy %s: %s", p.Name, err.Error())
-// 			}
-// 		}(p)
-// 	}
-// 	return nil
-// }
-
-// func (pl *ProxyList) stopAllProxies() error {
-// 	for _, p := range pl.Proxies {
-// 		go func(p *Proxy) {
-// 			if err := p.Stop(); err != nil {
-// 				// return fmt.Errorf("stop proxy %s: %s", p.Name, err.Error())
-// 				logrus.Errorf("Could not stop proxy %s: %s", p.Name, err.Error())
-// 			}
-// 		}(p)
-// 	}
-// 	return nil
-// }
