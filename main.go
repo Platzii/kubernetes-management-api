@@ -21,6 +21,7 @@ type Config struct {
 	KubeConfig         string
 	KubeCtl            string
 	Port               string `default:"8000"`
+	LogLevel           string `default:"info"`
 	kubeConfigLocation string
 	kubeCtlLocation    string
 }
@@ -33,6 +34,13 @@ func main() {
 
 	config = &Config{}
 	mc.MustLoad(config)
+
+	logLevel, err := logrus.ParseLevel(config.LogLevel)
+	if err != nil {
+		logrus.Warnf("Failed parsing log level, defaulting to 'info'. err - %v", err)
+		logLevel = logrus.InfoLevel
+	}
+	logrus.SetLevel(logLevel)
 
 	// get kube config location
 	if config.KubeConfig != "" {
