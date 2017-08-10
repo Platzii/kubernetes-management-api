@@ -2,8 +2,10 @@ package main
 
 import (
 	"fmt"
+	"net"
 	"os/exec"
 	"strconv"
+	"time"
 
 	"github.com/Sirupsen/logrus"
 )
@@ -20,6 +22,15 @@ type Proxy struct {
 // Start Starts a proxy connection
 func (p *Proxy) Start() error {
 	logrus.Debugf("Start proxy for context '%s'", p.Name)
+
+	// check if port is in use because kubectl does not seem to have this check
+	conn, err := net.DialTimeout("tcp", net.JoinHostPort("", p.Port), 100*time.Millisecond)
+	if err == nil {
+		return fmt.Errorf("port '%s' already in use", p.Port)
+	}
+	if conn != nil {
+		conn.Close()
+	}
 
 	p.cmd = exec.Command(config.kubeCtlLocation, "--context", p.Name, "proxy", "-p", p.Port)
 	if err := p.cmd.Start(); err != nil {
