@@ -20,6 +20,7 @@ import (
 type Config struct {
 	KubeConfig         string
 	KubeCtl            string
+	Host               string `default:""`
 	Port               string `default:"8000"`
 	LogLevel           string `default:"info"`
 	kubeConfigLocation string
@@ -88,8 +89,8 @@ func main() {
 	mux.HandleFunc("/proxy/stop", handleGetProxyStop)
 
 	handler := cors.Default().Handler(mux)
-	logrus.Infof("Starting to listen on port %s", config.Port)
-	if err := http.ListenAndServe(":"+config.Port, handler); err != nil {
+	logrus.Infof("Starting to listen on %s:%s", config.Host, config.Port)
+	if err := http.ListenAndServe(config.Host+":"+config.Port, handler); err != nil {
 		logrus.Fatalf("Could not start HTTP server: %s", err.Error())
 	}
 }
