@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net"
 	"os/exec"
+	"sort"
 	"strconv"
 	"time"
 
@@ -84,6 +85,10 @@ func (pl *ProxyList) FillProxies() error {
 	}
 
 	for i, context := range contexts {
+		if _, err := pl.GetProxyByName(context); err == nil {
+			continue
+		}
+
 		p := &Proxy{
 			Name:   context,
 			Port:   strconv.Itoa(8001 + i),
@@ -92,6 +97,10 @@ func (pl *ProxyList) FillProxies() error {
 		}
 		pl.Proxies = append(pl.Proxies, p)
 	}
+
+	sort.Slice(pl.Proxies, func(i, j int) bool {
+		return pl.Proxies[i].Name < pl.Proxies[j].Name
+	})
 
 	return nil
 }

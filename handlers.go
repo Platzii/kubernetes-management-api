@@ -6,6 +6,9 @@ import (
 )
 
 func handleGetProxyList(w http.ResponseWriter, r *http.Request) {
+	if err := proxyList.FillProxies(); err != nil {
+		returnError(w, 500, "Could not retreive proxy list: %s", err.Error())
+	}
 	returnResult(w, proxyList.Proxies)
 }
 
