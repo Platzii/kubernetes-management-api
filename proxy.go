@@ -13,11 +13,14 @@ import (
 
 // Proxy represents a proxy connection
 type Proxy struct {
-	Name   string `json:"name"`
-	Port   string `json:"port"`
-	Active bool   `json:"active"`
-	PID    int    `json:"pid"`
-	cmd    *exec.Cmd
+	Name            string `json:"name"`
+	Port            string `json:"port"`
+	Active          bool   `json:"active"`
+	PID             int    `json:"pid"`
+	K8sVersion      string `json:"k8sVersion"`
+	K8sMajorVersion string `json:"k8sMajorVersion"`
+	K8sMinorVersion string `json:"k8sMinorVersion"`
+	cmd             *exec.Cmd
 }
 
 // Start Starts a proxy connection
@@ -70,6 +73,14 @@ func (p *Proxy) Stop() error {
 	return nil
 }
 
+// FillK8sVersion Fills up the K8sVersion properties of a Proxy
+func (p *Proxy) FillK8sVersion() {
+	k8sVersion, k8sMajorVersion, k8sMinorVersion := getK8sVersion(p.Name)
+	p.K8sVersion = k8sVersion
+	p.K8sMajorVersion = k8sMajorVersion
+	p.K8sMinorVersion = k8sMinorVersion
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // ProxyList represents a list of proxy connections
@@ -86,14 +97,18 @@ func (pl *ProxyList) FillProxies() error {
 
 	for i, context := range contexts {
 		if _, err := pl.GetProxyByName(context); err == nil {
+			// skip if the context already exists in the ProxyList
 			continue
 		}
 
 		p := &Proxy{
-			Name:   context,
-			Port:   strconv.Itoa(8001 + i),
-			Active: false, // TODO: auto detect if proxy is already running?
-			PID:    -1,
+			Name:            context,
+			Port:            strconv.Itoa(8001 + i),
+			Active:          false, // TODO: auto detect if proxy is already running?
+			PID:             -1,
+			K8sVersion:      "",
+			K8sMajorVersion: "",
+			K8sMinorVersion: "",
 		}
 		pl.Proxies = append(pl.Proxies, p)
 	}
@@ -101,6 +116,8 @@ func (pl *ProxyList) FillProxies() error {
 	sort.Slice(pl.Proxies, func(i, j int) bool {
 		return pl.Proxies[i].Name < pl.Proxies[j].Name
 	})
+
+	pl.FillK8sVersions()
 
 	return nil
 }
@@ -113,4 +130,11 @@ func (pl *ProxyList) GetProxyByName(name string) (*Proxy, error) {
 		}
 	}
 	return nil, fmt.Errorf("Could not find proxy with name %s", name)
+}
+
+// FillK8sVersions Fills up the K8sVersion properties of each Proxy in the given ProxyList
+func (pl *ProxyList) FillK8sVersions() {
+	for _, proxy := range proxyList.Proxies {
+		go proxy.FillK8sVersion()
+	}
 }
